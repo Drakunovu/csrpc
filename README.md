@@ -8,7 +8,7 @@ The actual version of this script is: `0.1.0`
 
 ## How to use it?
 
-First of all, you can [download from artifacts](https://github.com/Drakunovu/csrpc#releases), or you can clone or download this repository
+First of all, you can [download from artifacts](https://github.com/Drakunovu/csrpc#artifactsreleases), or you can clone or download this repository
 
 If you clone/download this repository:
 
