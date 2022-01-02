@@ -5,11 +5,13 @@ from os import path, system, name
 import requests
 import a2s
 
+version = "0.1.0"
+
 
 def check_config():
     if path.exists("config.yml"):
         print(
-            "Counter-Strike 1.6 RPC has been created by Drakunovu#9424\nConfiguration file has been found, using it...\n"
+            "Counter-Strike 1.6 RPC has been created by Drakunovu#9424\n" + version + "\n\nConfiguration file has been found, using it...\n"
         )
     else:
         open("config.yml", "w").write(default_config)
