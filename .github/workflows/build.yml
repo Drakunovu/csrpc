@@ -32,7 +32,7 @@ jobs:
     - name: Build executable
       run: |
         pyinstaller --onefile --name cs16_rpc main.py
-        del /F /S /Q build/
+        rmdir build
         del cs16_rpc.spec
 
     - name: Upload artifact
