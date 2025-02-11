@@ -32,8 +32,6 @@ jobs:
     - name: Build executable
       run: |
         pyinstaller --onefile --name cs16_rpc main.py
-        rmdir build
-        del cs16_rpc.spec
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
