@@ -12,7 +12,10 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
 
     steps:
     - name: Checkout code
@@ -31,24 +34,34 @@ jobs:
 
     - name: Build executable
       run: |
-        pyinstaller --onefile --name cs16_rpc main.py
+        if runner.os == 'Windows'
+        then
+          pyinstaller --onefile --name cs16_rpc main.py
+        else
+          pyinstaller --onefile --name cs16_rpc main.py
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: cs16_rpc.exe
-        path: dist/cs16_rpc.exe
+        name: cs16_rpc-${{ runner.os }}
+        path: ${{ runner.os == 'Windows' && 'dist/cs16_rpc.exe' || 'dist/cs16_rpc' }}
 
   release:
     needs: build
     runs-on: ubuntu-latest
 
     steps:
-    - name: Download artifact
+    - name: Download Windows Artifact
       uses: actions/download-artifact@v4
       with:
-        name: cs16_rpc.exe
-        path: .
+        name: cs16_rpc-Windows
+        path: windows_build
+
+    - name: Download Linux Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: cs16_rpc-Linux
+        path: linux_build
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
@@ -56,7 +69,8 @@ jobs:
         tag_name: ${{ github.event.inputs.version || github.ref_name }}
         name: Release ${{ github.event.inputs.version || github.ref_name }}
         files: |
-          cs16_rpc.exe
+          windows_build/cs16_rpc.exe
+          linux_build/cs16_rpc
         generate_release_notes: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
