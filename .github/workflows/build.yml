@@ -12,10 +12,16 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        include:
+          - os: windows-latest
+            new_name: cs16_rpc-Windows.exe
+            ext: .exe
+          - os: ubuntu-latest
+            new_name: cs16_rpc-Linux
+            ext: ''
+    runs-on: ${{ matrix.os }}
 
     steps:
     - name: Checkout code
@@ -34,34 +40,32 @@ jobs:
 
     - name: Build executable
       run: |
-        if runner.os == 'Windows'
-        then
-          pyinstaller --onefile --name cs16_rpc main.py
-        else
-          pyinstaller --onefile --name cs16_rpc main.py
+        pyinstaller --onefile --name cs16_rpc main.py
+
+    - name: Rename executable
+      shell: bash
+      run: mv dist/cs16_rpc${{ matrix.ext }} dist/${{ matrix.new_name }}
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: cs16_rpc-${{ runner.os }}
-        path: ${{ runner.os == 'Windows' && 'dist/cs16_rpc.exe' || 'dist/cs16_rpc' }}
+        name: ${{ matrix.new_name }}
+        path: dist/${{ matrix.new_name }}
 
   release:
     needs: build
     runs-on: ubuntu-latest
 
     steps:
-    - name: Download Windows Artifact
+    - name: Download artifacts
       uses: actions/download-artifact@v4
       with:
-        name: cs16_rpc-Windows
-        path: windows_build
+        path: artifacts
 
-    - name: Download Linux Artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: cs16_rpc-Linux
-        path: linux_build
+    - name: Prepare release files
+      run: |
+        mv artifacts/cs16_rpc-Windows.exe/cs16_rpc-Windows.exe .
+        mv artifacts/cs16_rpc-Linux/cs16_rpc-Linux .
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
@@ -69,8 +73,8 @@ jobs:
         tag_name: ${{ github.event.inputs.version || github.ref_name }}
         name: Release ${{ github.event.inputs.version || github.ref_name }}
         files: |
-          windows_build/cs16_rpc.exe
-          linux_build/cs16_rpc
+          cs16_rpc-Windows.exe
+          cs16_rpc-Linux
         generate_release_notes: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
